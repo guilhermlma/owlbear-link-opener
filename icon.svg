@@ -1,5 +1,28 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#000000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M9 17H7A5 5 0 0 1 7 7h2" />
-  <path d="M15 7h2a5 5 0 1 1 0 10h-2" />
-  <line x1="8" y1="12" x2="16" y2="12" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="50%" stop-color="#6366f1" />
+      <stop offset="100%" stop-color="#8b5cf6" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.35" />
+    </filter>
+  </defs>
+  
+  <!-- Rounded Badge Background -->
+  <rect x="6" y="6" width="116" height="116" rx="28" fill="url(#bgGrad)" filter="url(#dropShadow)" />
+  
+  <!-- Subtle inner border for polish -->
+  <rect x="7" y="7" width="114" height="114" rx="27" fill="none" stroke="#ffffff" stroke-width="2" stroke-opacity="0.25" />
+  
+  <!-- Bold White Chain Link Icon -->
+  <g fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" transform="translate(64, 64) rotate(-45) translate(-64, -64)">
+    <!-- Left loop -->
+    <path d="M46 76H38 A18 18 0 0 1 38 40 H46" />
+    <!-- Right loop -->
+    <path d="M82 40 H90 A18 18 0 0 1 90 76 H82" />
+    <!-- Connecting middle bar -->
+    <line x1="42" y1="58" x2="86" y2="58" />
+  </g>
 </svg>

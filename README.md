@@ -1,6 +1,6 @@
 # Owlbear Link Opener 🔗
 
-An ultra-minimalist, lightweight extension for **[Owlbear Rodeo 2.0](https://owlbear.rodeo/)** that lets you attach web links with custom names to tokens and attachments. Clicking the link opens it directly in a new browser tab.
+A modern, lightweight extension for **[Owlbear Rodeo 2.0](https://owlbear.rodeo/)** that lets you attach web links with custom names to tokens and attachments. Clicking the link opens it directly in a new browser tab.
 
 ---
 
@@ -17,29 +17,29 @@ https://guilhermlma.github.io/owlbear-link-opener/manifest.json
 ## 🛠️ How to Install in Owlbear Rodeo
 
 1. Open any room in [Owlbear Rodeo](https://owlbear.rodeo/).
-2. Click your **Profile Icon** (or room menu) > **Extensions**.
-3. Click the **`+` (Add Extension)** button.
+2. Click your **Profile Icon** (or room menu `...`) > **Extensions**.
+3. Click the **`+` (Add Custom Extension)** button.
 4. Paste the URL:
    ```text
    https://guilhermlma.github.io/owlbear-link-opener/manifest.json
    ```
 5. Click **Install**.
-6. Ensure the extension is enabled in your room.
+6. **Enable in your room:** Open room settings (icon `...` in bottom-left) > **Extensions** and toggle **Link Opener** ON.
 
 ---
 
-## 💡 How It Works
+## 💡 Features
 
-- **Add Link**: Select any token or attachment on the map. Click **Add Link** in the context menu. Enter the target URL and an optional custom name (e.g., `Character Sheet`, `Monster Stats`, `Inventory`).
-- **Open Link**: The context menu dynamically displays your custom name (or `Open Link`). **Anyone in the room (including players with zero permissions)** can click it to open the link in a new browser tab.
-- **Remove Link**: If you have permission to edit the token, you can click **Remove Link** at any time to clear it.
-- **Zero Clutter**: No heavy popovers, no modals, and no action buttons clogging your toolbar—it runs silently in the background and integrates seamlessly into Owlbear Rodeo's native context menu.
+- **Action Toolbar Panel**: An icon appears in your toolbar. Click it to view the status, room overview, and a list of all tokens with links currently in the scene with 1-click open shortcuts.
+- **Native Modal Dialog**: Clicking **Add Link** or **Edit Link** opens a clean, dark-mode modal dialog to configure the URL and an optional custom label (e.g. `Character Sheet`, `Monster Stats`, `Inventory`).
+- **Context Menu Integration**: Right-click or select any token to see **Open Link** (or your custom label) and **Edit Link**.
+- **Player & GM Friendly**: Any player or GM in the room can click to open links. Only users with edit permissions on a token can add or modify links.
 
 ---
 
 ## 💻 Local Development
 
-Run the local development server (with CORS enabled):
+Run the local development server (with CORS and dynamic URL rewriting enabled):
 
 ```bash
 python serve.py 5173

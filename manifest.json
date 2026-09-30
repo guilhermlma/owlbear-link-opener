@@ -1,9 +1,16 @@
 {
   "name": "Link Opener",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "manifest_version": 1,
   "author": "Guilherme",
-  "icon": "./icon.svg",
-  "description": "Attach links with custom names to tokens and attachments. Click to open in a new tab.",
-  "background_url": "./background.html"
+  "icon": "https://guilhermlma.github.io/owlbear-link-opener/icon.svg",
+  "description": "Vincule links da web a tokens e anexos com nomes personalizados. Abra em nova aba com 1 clique.",
+  "action": {
+    "title": "Link Opener",
+    "icon": "https://guilhermlma.github.io/owlbear-link-opener/icon.svg",
+    "popover": "https://guilhermlma.github.io/owlbear-link-opener/popover.html",
+    "width": 360,
+    "height": 450
+  },
+  "background_url": "https://guilhermlma.github.io/owlbear-link-opener/background.html"
 }
