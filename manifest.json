@@ -4,7 +4,7 @@
   "manifest_version": 1,
   "author": "Guilherme",
   "icon": "https://guilhermlma.github.io/owlbear-link-opener/icon.svg",
-  "description": "Vincule URLs personalizadas a tokens e abra-as com 1 clique direto em nova aba no Owlbear Rodeo.",
+  "description": "Bind custom URLs to tokens and open them with 1 click directly in a new tab in Owlbear Rodeo.",
   "homepage_url": "https://github.com/guilhermlma/owlbear-link-opener",
   "background_url": "https://guilhermlma.github.io/owlbear-link-opener/background.html"
 }

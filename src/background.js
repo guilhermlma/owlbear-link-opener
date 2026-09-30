@@ -78,11 +78,11 @@ OBR.onReady(async () => {
     ],
     onClick: async (context) => {
       const item = context.items[0];
-      const url = window.prompt("Digite a URL do link (ex: https://...):");
+      const url = window.prompt("Enter the link URL (e.g. https://...):");
       
       if (!url) return;
 
-      const label = window.prompt("Digite o nome do botão:") || "Open Link";
+      const label = window.prompt("Enter the button name:") || "Open Link";
       const finalUrl = url.startsWith("http") ? url : `https://${url}`;
 
       await OBR.scene.items.updateItems([item.id], (items) => {
@@ -112,7 +112,7 @@ OBR.onReady(async () => {
       }
     ],
     onClick: async (context) => {
-      if (window.confirm("Tem certeza que deseja remover este link?")) {
+      if (window.confirm("Are you sure you want to remove this link?")) {
         const itemIds = context.items.map(i => i.id);
         await OBR.scene.items.updateItems(itemIds, (items) => {
           for (let item of items) {
