@@ -65,7 +65,7 @@ OBR.onReady(async () => {
     id: `${ID}/add`,
     icons: [
       {
-        icon: "/icon.svg",
+        icon: "icon.svg",
         label: "Add Link",
         filter: {
           every: [
@@ -101,7 +101,7 @@ OBR.onReady(async () => {
     id: `${ID}/remove`,
     icons: [
       {
-        icon: "/icon.svg",
+        icon: "icon.svg",
         label: "Remove Link",
         filter: {
           every: [
