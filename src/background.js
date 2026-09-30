@@ -31,7 +31,7 @@ async function updateContextMenus(items) {
           id: menuId,
           icons: [
             {
-              icon: "icon.svg",
+              icon: "https://guilhermlma.github.io/owlbear-link-opener/icon.svg",
               label: currentLabel,
               filter: {
                 every: [{ key: "id", value: item.id }],
@@ -65,7 +65,7 @@ OBR.onReady(async () => {
     id: `${ID}/add`,
     icons: [
       {
-        icon: "icon.svg",
+        icon: "https://guilhermlma.github.io/owlbear-link-opener/icon.svg",
         label: "Add Link",
         filter: {
           every: [
@@ -101,7 +101,7 @@ OBR.onReady(async () => {
     id: `${ID}/remove`,
     icons: [
       {
-        icon: "icon.svg",
+        icon: "https://guilhermlma.github.io/owlbear-link-opener/icon.svg",
         label: "Remove Link",
         filter: {
           every: [
