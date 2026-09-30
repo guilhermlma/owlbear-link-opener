@@ -1,0 +1,9 @@
+{
+  "name": "Link Opener",
+  "version": "1.0.0",
+  "manifest_version": 1,
+  "author": "Guilherme",
+  "icon": "./icon.svg",
+  "description": "Attach links with custom names to tokens and attachments. Click to open in a new tab.",
+  "background_url": "./background.html"
+}
