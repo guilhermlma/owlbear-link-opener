@@ -5,40 +5,47 @@ const ID_ADD = "rodeo.owlbear.link-opener/add";
 const ID_OPEN = "rodeo.owlbear.link-opener/open";
 const ID_REMOVE = "rodeo.owlbear.link-opener/remove";
 
-// Resolve a URL absoluta do ícone preto para funcionar em qualquer host (localhost, GitHub Pages, etc.)
+// Dynamically resolve absolute URL of icon.svg to work across localhost, GitHub Pages, etc.
 const ICON_URL = new URL("../icon.svg", import.meta.url).href;
 
 OBR.onReady(async () => {
   await updateMenu();
 
-  // Monitora seleção e mudanças de itens para manter os menus sincronizados
+  // Monitor selection, item changes, and scene readiness to keep context menus synchronized
   OBR.player.onChange(updateMenu);
   OBR.scene.items.onChange(updateMenu);
+  OBR.scene.onReadyChange(updateMenu);
 });
 
 async function updateMenu() {
-  const selection = await OBR.player.getSelection();
+  const isReady = await OBR.scene.isReady();
+  if (!isReady) {
+    await clearAllMenus();
+    return;
+  }
 
+  const selection = await OBR.player.getSelection();
   if (!selection || selection.length !== 1) {
-    await OBR.contextMenu.remove(ID_ADD);
-    await OBR.contextMenu.remove(ID_OPEN);
-    await OBR.contextMenu.remove(ID_REMOVE);
+    await clearAllMenus();
     return;
   }
 
   const [item] = await OBR.scene.items.getItems(selection);
-  if (!item) return;
+  if (!item) {
+    await clearAllMenus();
+    return;
+  }
 
   const data = item.metadata[METADATA_KEY];
 
-  if (data && data.url) {
-    // 1. O item já possui link: esconde 'Add Link'
-    await OBR.contextMenu.remove(ID_ADD);
+  // Remove existing menu items first to avoid any duplicate ID conflicts
+  await clearAllMenus();
 
+  if (data && data.url) {
     const buttonLabel = data.name?.trim() || "Open Link";
 
-    // 2. BOTÃO DE ABRIR O LINK:
-    // Sem restrição de permissão: qualquer jogador na sala consegue abrir!
+    // 1. OPEN LINK BUTTON
+    // No permission filter: all users in the room (GM and Players, even with 0 room permissions) can open the link
     await OBR.contextMenu.create({
       id: ID_OPEN,
       icons: [
@@ -52,16 +59,21 @@ async function updateMenu() {
           }
         }
       ],
-      onClick: () => {
-        const win = window.open(data.url, "_blank", "noopener,noreferrer");
+      onClick: (context) => {
+        const targetItem = context?.items?.[0] || item;
+        const currentData = targetItem?.metadata?.[METADATA_KEY] || data;
+        const targetUrl = currentData?.url;
+        if (!targetUrl) return;
+
+        const win = window.open(targetUrl, "_blank", "noopener,noreferrer");
         if (!win) {
           OBR.notification.show("Popup blocked by browser. Please allow popups for Owlbear.", "WARNING");
         }
       }
     });
 
-    // 3. BOTÃO DE REMOVER:
-    // Apenas quem tem permissão de UPDATE no item pode remover o link
+    // 2. REMOVE LINK BUTTON
+    // Restricted to users with UPDATE permissions on this item
     await OBR.contextMenu.create({
       id: ID_REMOVE,
       icons: [
@@ -75,8 +87,9 @@ async function updateMenu() {
           }
         }
       ],
-      onClick: async () => {
-        await OBR.scene.items.updateItems([item.id], (draft) => {
+      onClick: async (context) => {
+        const targetId = context?.items?.[0]?.id || item.id;
+        await OBR.scene.items.updateItems([targetId], (draft) => {
           delete draft[0].metadata[METADATA_KEY];
         });
         OBR.notification.show("Link removed!", "INFO");
@@ -84,12 +97,8 @@ async function updateMenu() {
       }
     });
   } else {
-    // Não possui link: limpa botões de abrir/remover
-    await OBR.contextMenu.remove(ID_OPEN);
-    await OBR.contextMenu.remove(ID_REMOVE);
-
-    // BOTÃO DE ADICIONAR:
-    // Exibido apenas para quem tem permissão de UPDATE no item
+    // 3. ADD LINK BUTTON
+    // Restricted to users with UPDATE permissions on this item
     await OBR.contextMenu.create({
       id: ID_ADD,
       icons: [
@@ -103,7 +112,8 @@ async function updateMenu() {
           }
         }
       ],
-      onClick: async () => {
+      onClick: async (context) => {
+        const targetId = context?.items?.[0]?.id || item.id;
         let url = window.prompt("Enter link URL:");
         if (!url || !url.trim()) return;
 
@@ -115,7 +125,7 @@ async function updateMenu() {
         let name = window.prompt("Enter link name:");
         name = name ? name.trim() : "";
 
-        await OBR.scene.items.updateItems([item.id], (draft) => {
+        await OBR.scene.items.updateItems([targetId], (draft) => {
           draft[0].metadata[METADATA_KEY] = { url, name };
         });
 
@@ -124,4 +134,16 @@ async function updateMenu() {
       }
     });
   }
+}
+
+async function clearAllMenus() {
+  try {
+    await OBR.contextMenu.remove(ID_ADD);
+  } catch {}
+  try {
+    await OBR.contextMenu.remove(ID_OPEN);
+  } catch {}
+  try {
+    await OBR.contextMenu.remove(ID_REMOVE);
+  } catch {}
 }
