@@ -1,158 +1,134 @@
-import OBR from "https://esm.sh/@owlbear-rodeo/sdk";
+import OBR from "./obr-sdk.js";
 
-const METADATA_KEY = "rodeo.owlbear.link-opener/data";
-const ID_OPEN = "rodeo.owlbear.link-opener/open";
-const ID_EDIT = "rodeo.owlbear.link-opener/edit";
-const MODAL_ID = "rodeo.owlbear.link-opener/modal";
+const ID = "com.guilherme.link-opener";
+const META_KEY = `${ID}/data`;
 
-const ICON_URL = new URL("../icon.svg", import.meta.url).href;
+const registeredMenus = new Map();
 
-OBR.onReady(async () => {
-  // Inicializa os menus de contexto uma única vez
-  await setupContextMenus();
+async function updateContextMenus(items) {
+  const currentItemIds = new Set(items.map(i => i.id));
 
-  // Atualiza os rótulos dinamicamente ao selecionar itens
-  OBR.player.onChange(updateMenuLabels);
-  OBR.scene.items.onChange(updateMenuLabels);
-  OBR.scene.onReadyChange((isReady) => {
-    if (isReady) updateMenuLabels();
-  });
-});
-
-async function setupContextMenus() {
-  // Menu 1: Botão Principal (Abrir Link se existir, ou Adicionar Link se não houver)
-  await OBR.contextMenu.create({
-    id: ID_OPEN,
-    icons: [
-      {
-        icon: ICON_URL,
-        label: "🔗 Link",
-        filter: {
-          min: 1,
-          max: 1,
-          roles: ["GM", "PLAYER"]
-        }
-      }
-    ],
-    onClick: async (context) => {
-      const item = context?.items?.[0];
-      if (!item) return;
-
-      const data = item.metadata[METADATA_KEY];
-      if (data && data.url) {
-        // Abre o link em nova aba
-        const win = window.open(data.url, "_blank", "noopener,noreferrer");
-        if (!win) {
-          await OBR.notification.show(
-            "Pop-up bloqueado pelo navegador. Por favor, permita pop-ups para o Owlbear.",
-            "WARNING"
-          );
-        }
-      } else {
-        // Se não possui link, abre modal para adicionar
-        await openModal(item.id);
-      }
+  // Remove menus for items that no longer exist
+  for (const menuId of registeredMenus.keys()) {
+    const itemId = menuId.replace(`${ID}/open/`, "");
+    if (!currentItemIds.has(itemId)) {
+      OBR.contextMenu.remove(menuId);
+      registeredMenus.delete(menuId);
     }
-  });
+  }
 
-  // Menu 2: Botão de Gerenciamento / Edição (apenas para quem pode editar o token)
-  await OBR.contextMenu.create({
-    id: ID_EDIT,
-    icons: [
-      {
-        icon: ICON_URL,
-        label: "⚙️ Configurar Link",
-        filter: {
-          min: 1,
-          max: 1,
-          permissions: ["UPDATE"]
-        }
-      }
-    ],
-    onClick: async (context) => {
-      const item = context?.items?.[0];
-      if (!item) return;
-      await openModal(item.id);
-    }
-  });
-
-  await updateMenuLabels();
-}
-
-async function updateMenuLabels() {
-  try {
-    const isReady = await OBR.scene.isReady();
-    if (!isReady) return;
-
-    const selection = await OBR.player.getSelection();
-    if (!selection || selection.length !== 1) return;
-
-    const [item] = await OBR.scene.items.getItems(selection);
-    if (!item) return;
-
-    const data = item.metadata[METADATA_KEY];
-
+  // Create or update dynamic context menus for items with links
+  for (const item of items) {
+    const data = item.metadata[META_KEY];
+    const menuId = `${ID}/open/${item.id}`;
+    
     if (data && data.url) {
-      const customName = data.name?.trim();
-      const openLabel = customName ? `🔗 ${customName}` : "🔗 Abrir Link";
-
-      await OBR.contextMenu.create({
-        id: ID_OPEN,
-        icons: [
-          {
-            icon: ICON_URL,
-            label: openLabel,
-            filter: { min: 1, max: 1, roles: ["GM", "PLAYER"] }
+      const currentLabel = data.label || "Open Link";
+      
+      // If menu is not registered for this item yet, or label changed
+      if (registeredMenus.get(menuId) !== currentLabel) {
+        OBR.contextMenu.create({
+          id: menuId,
+          icons: [
+            {
+              icon: "icon.svg",
+              label: currentLabel,
+              filter: {
+                every: [{ key: "id", value: item.id }],
+                roles: ["GM", "PLAYER"]
+              },
+            }
+          ],
+          onClick: () => {
+            // Fetch the freshest URL right when clicking
+            OBR.scene.items.getItems([item.id]).then(itms => {
+              const d = itms[0]?.metadata[META_KEY];
+              if (d && d.url) window.open(d.url, "_blank");
+            });
           }
-        ]
-      });
-
-      await OBR.contextMenu.create({
-        id: ID_EDIT,
-        icons: [
-          {
-            icon: ICON_URL,
-            label: "⚙️ Editar Link",
-            filter: { min: 1, max: 1, permissions: ["UPDATE"] }
-          }
-        ]
-      });
+        });
+        registeredMenus.set(menuId, currentLabel);
+      }
     } else {
-      await OBR.contextMenu.create({
-        id: ID_OPEN,
-        icons: [
-          {
-            icon: ICON_URL,
-            label: "🔗 Adicionar Link",
-            filter: { min: 1, max: 1, roles: ["GM", "PLAYER"] }
-          }
-        ]
-      });
-
-      await OBR.contextMenu.create({
-        id: ID_EDIT,
-        icons: [
-          {
-            icon: ICON_URL,
-            label: "⚙️ Configurar Link",
-            filter: { min: 1, max: 1, permissions: ["UPDATE"] }
-          }
-        ]
-      });
+      // Item exists but link was removed
+      if (registeredMenus.has(menuId)) {
+        OBR.contextMenu.remove(menuId);
+        registeredMenus.delete(menuId);
+      }
     }
-  } catch (err) {
-    console.error("[Link Opener] Erro ao atualizar labels do menu:", err);
   }
 }
 
-async function openModal(itemId) {
-  const modalUrl = new URL("../modal.html", import.meta.url);
-  modalUrl.searchParams.set("itemId", itemId);
+OBR.onReady(async () => {
+  // 1. Add Link Button (Static, only shows when NO link exists)
+  OBR.contextMenu.create({
+    id: `${ID}/add`,
+    icons: [
+      {
+        icon: "/icon.svg",
+        label: "Add Link",
+        filter: {
+          every: [
+            { key: "type", value: "IMAGE" },
+            { key: ["metadata", META_KEY], value: undefined }
+          ],
+          permissions: ["UPDATE"]
+        },
+      }
+    ],
+    onClick: async (context) => {
+      const item = context.items[0];
+      const url = window.prompt("Digite a URL do link (ex: https://...):");
+      
+      if (!url) return;
 
-  await OBR.modal.open({
-    id: MODAL_ID,
-    url: modalUrl.href,
-    width: 400,
-    height: 340
+      const label = window.prompt("Digite o nome do botão:") || "Open Link";
+      const finalUrl = url.startsWith("http") ? url : `https://${url}`;
+
+      await OBR.scene.items.updateItems([item.id], (items) => {
+        for (let i of items) {
+          i.metadata[META_KEY] = {
+            url: finalUrl,
+            label: label
+          };
+        }
+      });
+    }
   });
-}
+
+  // 2. Remove Link Button (Static, only shows when link exists)
+  OBR.contextMenu.create({
+    id: `${ID}/remove`,
+    icons: [
+      {
+        icon: "/icon.svg",
+        label: "Remove Link",
+        filter: {
+          every: [
+            { key: ["metadata", META_KEY], value: undefined, operator: "!=" }
+          ],
+          permissions: ["UPDATE"]
+        },
+      }
+    ],
+    onClick: async (context) => {
+      if (window.confirm("Tem certeza que deseja remover este link?")) {
+        const itemIds = context.items.map(i => i.id);
+        await OBR.scene.items.updateItems(itemIds, (items) => {
+          for (let item of items) {
+            delete item.metadata[META_KEY];
+          }
+        });
+      }
+    }
+  });
+
+  // Initial scan to create menus for items that already have links
+  const items = await OBR.scene.items.getItems();
+  updateContextMenus(items);
+
+  // Subscribe to changes to dynamically generate buttons when new links are added/edited
+  OBR.scene.items.onChange((updatedItems) => {
+    updateContextMenus(updatedItems);
+  });
+});
